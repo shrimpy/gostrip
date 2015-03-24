@@ -32,43 +32,22 @@ import (
 	"strings"
 )
 
-var (
-	repo = flag.String("repo", "https://go.googlesource.com/go", "Repository location")
-)
-
 func main() {
-	flag.Usage = func() {
+    flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "usage: %v [flags] <destination>\n", os.Args[0])
 		flag.PrintDefaults()
 	}
+	
 	flag.Parse()
 	if len(flag.Args()) != 1 {
 		flag.Usage()
 		os.Exit(2)
 	}
+
 	dest := flag.Arg(0)
 
-	if _, err := os.Stat(dest); err == nil {
-		dief("destination %v already exists; won't overwrite.\n", dest)
-	}
-
-	cmd := exec.Command("git", "clone", *repo, dest)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		dief("cloning repo: %v\n", err)
-	}
-
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command(".\\make.bat")
-	} else {
-		cmd = exec.Command("./make.bash")
-	}
-	cmd.Dir = filepath.Join(dest, "src")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		dief("building go: %v\n", err)
+	if _, err := os.Stat(dest); err != nil {
+		dief("please specify a valid folder: %v \n", dest)
 	}
 
 	for _, pat := range alwaysRemove {
@@ -138,6 +117,8 @@ var alwaysRemove = []string{
 	".git",
 	".gitattributes",
 	".gitignore",
+	".hgignore",
+	".hgtags",
 	"CONTRIBUTING.md",
 	"VERSION.cache",
 	"favicon.ico",
@@ -149,6 +130,7 @@ var alwaysRemove = []string{
 	"misc",
 	"pkg/obj",
 	"test",
+	"blog",
 
 	"bin/dist",
 
